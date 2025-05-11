@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkmacosx import Button # support button colors on MacOS
+from tkmacosx import Button #support button colors on MacOS
 import random
 import time
 from threading import Thread
@@ -8,6 +8,7 @@ from threading import Thread
 
 class MemoryGame:
     def __init__(self,root):
+        
         self.root=root
         self.root.title("Memory Game")
         self.root.geometry('500x500') #Dimensions
@@ -35,6 +36,7 @@ class MemoryGame:
                 focuscolor='',  
                 command=lambda c=color: self.click(c) 
             )
+            
             #Layout for 4 buttons
             button.grid(row=x//2,column=x%2,padx=5,pady=5)
             #Store button
@@ -59,6 +61,7 @@ class MemoryGame:
         self.nextRound()
         
     def nextRound(self):
+        
         self.level+=1 #Go up a level
         self.ScreenStatus.config(text=f"Level: {self.level}")
         self.playerSequence =[] #Clear Again
@@ -68,6 +71,7 @@ class MemoryGame:
         Thread(target=self.whiteSequence).start()
 
     def whiteSequence(self):
+        
         time.sleep(1) #Delay before we change the color
         for color in self.sequence:
             
@@ -84,6 +88,7 @@ class MemoryGame:
         self.ScreenStatus.config(text="Memorize The Pattern")
 
     def click(self, color):
+        
         if not self.gamePlaying:
             
             #If game isnt playing then return
@@ -116,7 +121,7 @@ class MemoryGame:
             #Reset level to 0
             self.level = 0
 
-# Main program loop
+
 def main():
 
     root = tk.Tk()
