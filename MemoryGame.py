@@ -19,6 +19,7 @@ class MemoryGame:
         self.playerSequence=[] #Will track the colors the player clicks
         self.level = 0  #Will track game levels
         self.gamePlaying = False #By default game is not running till we click start
+        self.inSequence = False
         self.messages = [ "Correct! Well done!",
                          "That's right! Keep it up!",
                          "Nice job!",
@@ -67,11 +68,11 @@ class MemoryGame:
         self.gamePlaying=True 
        
         #Disable start button 
+        self.startButton.pack_forget()
         self.startButton.config(state=tk.DISABLED)
         self.nextRound()
         
     def nextRound(self):
-        
         self.level+=1 #Go up a level
         self.ScreenStatus.config(text=f"Level: {self.level}")
         self.playerSequence =[] #Clear Again
@@ -109,12 +110,17 @@ class MemoryGame:
            
             time.sleep(.3) #pause before next color change
         self.ScreenStatus.config(text=f"Level: {self.level}")
+        self.inSequence = False #Let player click
 
     def click(self, color):
         
         if not self.gamePlaying:
             self.playSound(color)
             #If game isnt playing then return
+            return
+        
+        if self.inSequence:
+            #If inSequence return
             return
         
         #otherwise
@@ -128,6 +134,7 @@ class MemoryGame:
             
             #Next round if completed
             if len(self.playerSequence) == len(self.sequence):
+                self.inSequence = True #Prevent player from clicking
                 self.root.after(1000, self.nextRound)
         else:
             self.playSound("")
@@ -139,6 +146,7 @@ class MemoryGame:
            
             #Resetting start button
             self.startButton.config(state=tk.NORMAL)
+            self.startButton.pack()
             
             #Set sequence to clear again
             self.sequence.clear()
