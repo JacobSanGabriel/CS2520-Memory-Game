@@ -3,7 +3,8 @@ from tkmacosx import Button #support button colors on MacOS
 import random
 import time
 from threading import Thread
-
+import sounddevice as sd
+import soundfile as sf
 
 
 class MemoryGame:
@@ -18,6 +19,15 @@ class MemoryGame:
         self.playerSequence=[] #Will track the colors the player clicks
         self.level = 0  #Will track game levels
         self.gamePlaying = False #By default game is not running till we click start
+        self.messages = [ "Correct! Well done!",
+                         "That's right! Keep it up!",
+                         "Nice job!",
+                         "Exactly!",
+                         "Yup! That’s right ",
+                         "So smart!",
+                         "Doing great!"
+        ]
+        self.sound = ['c6.mp3', 'f6.mp3', 'b6.mp3', 'g6.mp3', 'incorrect.mp3']
 
         #Top Status for Press Start
         self.ScreenStatus = tk.Label(root, text="Press Start to Begin", font=("Arial", 16))
@@ -69,12 +79,25 @@ class MemoryGame:
         
         #Will call white for the sequence
         Thread(target=self.whiteSequence).start()
+    
+    def playSound(self, color):
+        if color == self.COLORS[0]:#Check red
+            data, samplerate = sf.read("Sounds\\c6.mp3")
+        elif color == self.COLORS[1]:#Check blue
+            data, samplerate = sf.read("Sounds\\f6.mp3")
+        elif color == self.COLORS[2]:#Check green
+            data, samplerate = sf.read("Sounds\\g6.mp3")
+        elif color == self.COLORS[3]:#Check yellow
+            data, samplerate = sf.read("Sounds\\b6.mp3")
+        else: data, samplerate = sf.read("Sounds\\incorrect.mp3")
+        sd.play(data, samplerate)
 
     def whiteSequence(self):
         
         time.sleep(1) #Delay before we change the color
         for color in self.sequence:
-            
+            self.playSound(color)
+
             #Change the buttons to white
             self.buttons[color].configure(bg="white") 
             self.root.update()
@@ -90,22 +113,24 @@ class MemoryGame:
     def click(self, color):
         
         if not self.gamePlaying:
-            
+            self.playSound(color)
             #If game isnt playing then return
             return
         
         #otherwise
         self.playerSequence.append(color)
         if self.playerSequence == self.sequence[:len(self.playerSequence)]:
-            
+            #Play Sound
+            self.playSound(color)
+
             #Checking if player is correct
-            self.ScreenStatus.config(text="Nice keep going!.")
+            self.ScreenStatus.config(text=self.messages[len(self.playerSequence)%7])
             
             #Next round if completed
             if len(self.playerSequence) == len(self.sequence):
                 self.root.after(1000, self.nextRound)
         else:
-            
+            self.playSound("")
             #if player is not correct then game is over
             self.ScreenStatus.config(text="Wrong! Game Over.")
            
