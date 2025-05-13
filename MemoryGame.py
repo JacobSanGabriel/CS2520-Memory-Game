@@ -93,7 +93,7 @@ class MemoryGame:
         sd.play(data, samplerate)
 
     def whiteSequence(self):
-        
+        self.ScreenStatus.config(text="Memorize The Pattern")
         time.sleep(1) #Delay before we change the color
         for color in self.sequence:
             self.playSound(color)
@@ -108,7 +108,7 @@ class MemoryGame:
             self.root.update() 
            
             time.sleep(.3) #pause before next color change
-        self.ScreenStatus.config(text="Memorize The Pattern")
+        self.ScreenStatus.config(text=f"Level: {self.level}")
 
     def click(self, color):
         
