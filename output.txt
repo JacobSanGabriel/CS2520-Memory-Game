@@ -1,0 +1,25 @@
+Memory Game Session Info
+
+GAME SESSION (2025-05-13 19:52:42):
+Difficulty: Hard
+Level 1: 3.73 sec
+  Sequence: ['blue']
+  Player Input: ['blue']
+Level 2: 2.89 sec
+  Sequence: ['blue', 'red']
+  Player Input: ['blue', 'red']
+Level 3: 3.32 sec
+  Sequence: ['blue', 'red', 'green']
+  Player Input: ['yellow']
+
+GAME SESSION (2025-05-13 19:53:05):
+Difficulty: Easy
+Level 1: 3.6 sec
+  Sequence: ['yellow']
+  Player Input: ['yellow']
+Level 2: 7.46 sec
+  Sequence: ['yellow', 'yellow']
+  Player Input: ['yellow', 'yellow']
+Level 3: 7.42 sec
+  Sequence: ['yellow', 'yellow', 'red']
+  Player Input: ['yellow', 'green']

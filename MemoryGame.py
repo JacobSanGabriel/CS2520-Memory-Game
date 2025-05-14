@@ -5,6 +5,7 @@ import time
 from threading import Thread
 import sounddevice as sd
 import soundfile as sf
+from datetime import datetime
 
 
 class MemoryGame:
@@ -25,14 +26,14 @@ class MemoryGame:
         self.flash_duration = 0.5  # default (medium)
         self.pause_duration = 0.3
 
-        # Difficulty selection screen
+        #Difficulty selection screen options
         self.difficulty_frame = tk.Frame(root)
         self.difficulty_label = tk.Label(self.difficulty_frame, text="Select Difficulty", font=("Arial", 16))
         self.difficulty_label.pack(pady=10)
 
-        tk.Button(self.difficulty_frame, text="Easy", width=10, command=lambda: self.setDifficulty("easy")).pack(pady=5)
-        tk.Button(self.difficulty_frame, text="Medium", width=10, command=lambda: self.setDifficulty("medium")).pack(pady=5)
-        tk.Button(self.difficulty_frame, text="Hard", width=10, command=lambda: self.setDifficulty("hard")).pack(pady=5)
+        Button(self.difficulty_frame, text="Easy", width=130, height=40, command=lambda: self.setDifficulty("easy")).pack(pady=5)
+        Button(self.difficulty_frame, text="Medium", width=130, height=40, command=lambda: self.setDifficulty("medium")).pack(pady=5)
+        Button(self.difficulty_frame, text="Hard", width=130, height=40, command=lambda: self.setDifficulty("hard")).pack(pady=5)
 
         self.difficulty_frame.pack(pady=100)
 
@@ -46,12 +47,18 @@ class MemoryGame:
         ]
         self.sound = ['c6.mp3', 'f6.mp3', 'b6.mp3', 'g6.mp3', 'incorrect.mp3']
 
+        #MAIN GAME UI
         self.main_frame = tk.Frame(root)
-        self.main_frame.pack_forget()  # Hide initially
+        self.main_frame.pack_forget()  # Hide initially until difficulty is selected
 
         #Top Status for Press Start
         self.ScreenStatus = tk.Label(self.main_frame, text="Press Start to Begin", font=("Arial", 16))
         self.ScreenStatus.pack(pady=10)
+
+        #Used for logging info thats put into output.txt
+        self.difficulty = "Medium"  #default but gets overwritten
+        self.session_data = []
+        self.level_start_time = None #time when the level starts 
 
         #Need Frames which have previously been defined
         self.frame = tk.Frame(self.main_frame)
@@ -72,25 +79,25 @@ class MemoryGame:
             #Store button
             self.buttons[color] = button
 
-        #Start button for color buttons
+        #Start button for color buttons hidden until difficulty is selected
         self.startButton = Button(self.main_frame, text="Start", height=40, focuscolor='', command=self.gameStart)
         self.startButton.pack_forget()
 
-        #Game over stat screen
+        #GAME OVER STAT SCREEN variables
         self.stat_frame = tk.Frame(self.root)
         self.stat_label = tk.Label(self.stat_frame, text="", font=("Arial", 16))
         self.stat_label.pack(pady=10)
 
-        tk.Button(self.stat_frame, text="Try Again", command=self.retrySameDifficulty).pack(pady=5)
-        tk.Button(self.stat_frame, text="Change Difficulty", command=self.changeDifficulty).pack(pady=5)
-        tk.Button(self.stat_frame, text="Quit", command=self.root.quit).pack(pady=5)
+        Button(self.stat_frame, text="Try Again", width=130, height=40, command=self.retrySameDifficulty).pack(pady=5)
+        Button(self.stat_frame, text="Change Difficulty", width=130, height=40, command=self.changeDifficulty).pack(pady=5)
+        Button(self.stat_frame, text="Quit", width=130, height=40, command=self.root.quit).pack(pady=5)
 
-        self.stat_frame.pack_forget()  #Hide it by default by default
+        self.stat_frame.pack_forget()  #Hide it by default by default until game is over
 
 
     def gameStart(self):
-        
-        #Make sure they are empty before game starts
+        #store the data from the game and reset it every new game
+        self.session_data = []
         self.sequence.clear() 
         self.playerSequence.clear() 
         self.level = 0 
@@ -108,6 +115,7 @@ class MemoryGame:
         self.ScreenStatus.config(text=f"Level: {self.level}")
         self.playerSequence =[] #Clear Again
         self.sequence.append(random.choice(self.COLORS)) #Add new color to sequence
+        self.level_start_time = time.time()
         
         #Will call white for the sequence
         Thread(target=self.whiteSequence).start()
@@ -145,18 +153,21 @@ class MemoryGame:
 
         
     def setDifficulty(self, level):
+        self.difficulty = level.capitalize() 
+
+        #updating game speed based on the difficulty that was chosen
         if level == "easy":
-            self.flash_duration = 0.8
-            self.pause_duration = 0.5
+            self.flash_duration = 0.9
+            self.pause_duration = 0.6
         elif level == "medium":
             self.flash_duration = 0.5
             self.pause_duration = 0.3
         elif level == "hard":
-            self.flash_duration = 0.3
-            self.pause_duration = 0.2
+            self.flash_duration = 0.1
+            self.pause_duration = 0.1
 
+        #hide the difficulty screen and go back to the gameUI
         self.difficulty_frame.pack_forget()
-
         self.main_frame.pack() 
         self.ScreenStatus.config(text="Press Start to Begin")
         self.frame.pack()
@@ -172,7 +183,6 @@ class MemoryGame:
     def changeDifficulty(self):
         self.stat_frame.pack_forget()
         self.difficulty_frame.pack(pady=100)
-
 
     def click(self, color):
         
@@ -196,12 +206,29 @@ class MemoryGame:
             
             #Next round if completed
             if len(self.playerSequence) == len(self.sequence):
-                self.inSequence = True #Prevent player from clicking
+                #lpg the levels that weere completed
+                duration = round(time.time() - self.level_start_time, 2)
+                self.session_data.append({
+                    "level": self.level,
+                    "time": duration,
+                    "sequence": self.sequence[:],
+                    "player_input": self.playerSequence[:]
+                })
+                self.inSequence = True
                 self.root.after(1000, self.nextRound)
         else:
             self.playSound("")
             #if player is not correct then game is over
             self.ScreenStatus.config(text="Wrong! Game Over.")
+            duration = round(time.time() - self.level_start_time, 2)
+            #add the failed level to the output.txt also
+            self.session_data.append({
+                "level": self.level,
+                "time": duration,
+                "sequence": self.sequence[:],
+                "player_input": self.playerSequence[:] 
+            })
+            self.writeSessionLog()#save to the output file
            
             #set game to over
             self.gamePlaying = False
@@ -220,8 +247,23 @@ class MemoryGame:
             #Reset level to 0
             self.level = 0
 
+    #writing the stored variables to the output.txt
+    def writeSessionLog(self):
+        filepath = "output.txt"
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(filepath, "a") as f:
+            f.write(f"\nGAME SESSION ({now}):\n")
+            f.write(f"Difficulty: {self.difficulty}\n")
+            for entry in self.session_data:
+                f.write(f"Level {entry['level']}: {entry['time']} sec\n")
+                f.write(f"  Sequence: {entry['sequence']}\n")
+                f.write(f"  Player Input: {entry['player_input']}\n")
+        
 
 def main():
+    #clear the output.txt file
+    with open("output.txt", "w") as f:
+        f.write("Memory Game Session Info\n")
 
     root = tk.Tk()
     game = MemoryGame(root)
