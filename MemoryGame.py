@@ -20,6 +20,22 @@ class MemoryGame:
         self.level = 0  #Will track game levels
         self.gamePlaying = False #By default game is not running till we click start
         self.inSequence = False
+
+        #section to be able to set game difficulty
+        self.flash_duration = 0.5  # default (medium)
+        self.pause_duration = 0.3
+
+        # Difficulty selection screen
+        self.difficulty_frame = tk.Frame(root)
+        self.difficulty_label = tk.Label(self.difficulty_frame, text="Select Difficulty", font=("Arial", 16))
+        self.difficulty_label.pack(pady=10)
+
+        tk.Button(self.difficulty_frame, text="Easy", width=10, command=lambda: self.setDifficulty("easy")).pack(pady=5)
+        tk.Button(self.difficulty_frame, text="Medium", width=10, command=lambda: self.setDifficulty("medium")).pack(pady=5)
+        tk.Button(self.difficulty_frame, text="Hard", width=10, command=lambda: self.setDifficulty("hard")).pack(pady=5)
+
+        self.difficulty_frame.pack(pady=100)
+
         self.messages = [ "Correct! Well done!",
                          "That's right! Keep it up!",
                          "Nice job!",
@@ -30,13 +46,16 @@ class MemoryGame:
         ]
         self.sound = ['c6.mp3', 'f6.mp3', 'b6.mp3', 'g6.mp3', 'incorrect.mp3']
 
+        self.main_frame = tk.Frame(root)
+        self.main_frame.pack_forget()  # Hide initially
+
         #Top Status for Press Start
-        self.ScreenStatus = tk.Label(root, text="Press Start to Begin", font=("Arial", 16))
+        self.ScreenStatus = tk.Label(self.main_frame, text="Press Start to Begin", font=("Arial", 16))
         self.ScreenStatus.pack(pady=10)
 
         #Need Frames which have previously been defined
-        self.frame = tk.Frame(root)
-        self.frame.pack()
+        self.frame = tk.Frame(self.main_frame)
+        self.frame.pack_forget()
         self.buttons = {} # Color buttons dictionary
            
             #Create colored buttons for the button in the list
@@ -54,8 +73,8 @@ class MemoryGame:
             self.buttons[color] = button
 
         #Start button for color buttons
-        self.startButton = Button(root, text="Start", height=40, focuscolor='', command=self.gameStart) 
-        self.startButton.pack(pady=20)
+        self.startButton = Button(self.main_frame, text="Start", height=40, focuscolor='', command=self.gameStart)
+        self.startButton.pack_forget()
 
     def gameStart(self):
         
@@ -102,15 +121,35 @@ class MemoryGame:
             #Change the buttons to white
             self.buttons[color].configure(bg="white") 
             self.root.update()
-            time.sleep(.5) #it will be white for .5 secs
+            time.sleep(self.flash_duration)
             
             #Revert the buttons color
             self.buttons[color].configure(bg=color)
             self.root.update() 
            
-            time.sleep(.3) #pause before next color change
+            time.sleep(self.pause_duration) #pause before next color change
         self.ScreenStatus.config(text=f"Level: {self.level}")
         self.inSequence = False #Let player click
+
+        
+    def setDifficulty(self, level):
+        if level == "easy":
+            self.flash_duration = 0.8
+            self.pause_duration = 0.5
+        elif level == "medium":
+            self.flash_duration = 0.5
+            self.pause_duration = 0.3
+        elif level == "hard":
+            self.flash_duration = 0.3
+            self.pause_duration = 0.2
+
+        self.difficulty_frame.pack_forget()
+
+        self.main_frame.pack() 
+        self.ScreenStatus.config(text="Press Start to Begin")
+        self.frame.pack()
+        self.startButton.pack(pady=20)
+
 
     def click(self, color):
         
