@@ -76,6 +76,18 @@ class MemoryGame:
         self.startButton = Button(self.main_frame, text="Start", height=40, focuscolor='', command=self.gameStart)
         self.startButton.pack_forget()
 
+        #Game over stat screen
+        self.stat_frame = tk.Frame(self.root)
+        self.stat_label = tk.Label(self.stat_frame, text="", font=("Arial", 16))
+        self.stat_label.pack(pady=10)
+
+        tk.Button(self.stat_frame, text="Try Again", command=self.retrySameDifficulty).pack(pady=5)
+        tk.Button(self.stat_frame, text="Change Difficulty", command=self.changeDifficulty).pack(pady=5)
+        tk.Button(self.stat_frame, text="Quit", command=self.root.quit).pack(pady=5)
+
+        self.stat_frame.pack_forget()  #Hide it by default by default
+
+
     def gameStart(self):
         
         #Make sure they are empty before game starts
@@ -148,7 +160,18 @@ class MemoryGame:
         self.main_frame.pack() 
         self.ScreenStatus.config(text="Press Start to Begin")
         self.frame.pack()
+        self.startButton.config(state=tk.NORMAL) #reset the start button state
         self.startButton.pack(pady=20)
+
+
+    def retrySameDifficulty(self):
+        self.stat_frame.pack_forget()
+        self.main_frame.pack()
+        self.gameStart()
+
+    def changeDifficulty(self):
+        self.stat_frame.pack_forget()
+        self.difficulty_frame.pack(pady=100)
 
 
     def click(self, color):
@@ -184,8 +207,12 @@ class MemoryGame:
             self.gamePlaying = False
            
             #Resetting start button
-            self.startButton.config(state=tk.NORMAL)
-            self.startButton.pack()
+            # Hide game UI
+            self.main_frame.pack_forget()
+
+            # Show stat screen
+            self.stat_label.config(text=f"Game Over! You reached level {self.level}")
+            self.stat_frame.pack(pady=100)
             
             #Set sequence to clear again
             self.sequence.clear()
