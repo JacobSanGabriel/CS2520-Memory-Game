@@ -9,7 +9,7 @@ Adrian Caballero, Caitlyn Hue, Jacob San Gabriel, Luis Felix Reyes
 
 > **Note:** Make sure all dependencies are installed before running the game (see [Dependencies](#dependencies)).
 
-1. Run `main.py`.
+1. Run `MemoryGame.py`.
 2. Select a difficulty: Easy, Medium, or Hard.
 3. Click **Start**.
 4. Watch the color tiles flash white—this is the pattern to memorize.
